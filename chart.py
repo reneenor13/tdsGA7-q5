@@ -3,34 +3,53 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 
-# Generate synthetic customer support response time data
+# Set random seed for reproducible data
 np.random.seed(42)
-channels = ['Email', 'Chat', 'Phone']
-data = []
 
-for ch in channels:
-    times = np.random.gamma(shape=2, scale=10, size=100)  # realistic response times
-    for t in times:
-        data.append({'Channel': ch, 'ResponseTime': t})
+# Generate synthetic customer support response time data
+n_samples = 300
 
-df = pd.DataFrame(data)
+# Create realistic response time distributions for different channels
+email_times = np.random.lognormal(mean=2.5, sigma=0.8, size=n_samples//3)
+phone_times = np.random.lognormal(mean=1.8, sigma=0.6, size=n_samples//3)
+chat_times = np.random.lognormal(mean=1.2, sigma=0.5, size=n_samples//3)
 
-# Seaborn styling
+# Create DataFrame
+data = pd.DataFrame({
+    'Channel': ['Email'] * (n_samples//3) + ['Phone'] * (n_samples//3) + ['Chat'] * (n_samples//3),
+    'Response_Time_Hours': np.concatenate([email_times, phone_times, chat_times])
+})
+
+# Set up the plot style and context
 sns.set_style("whitegrid")
-sns.set_context("talk")
+sns.set_context("talk", font_scale=1.1)
 
-# Create figure (size in inches doesn't matter now)
-fig, ax = plt.subplots()
+# Create figure with specified size for 512x512 output
+plt.figure(figsize=(8, 8))
 
 # Create violinplot
-sns.violinplot(x='Channel', y='ResponseTime', data=df, palette='Set2', ax=ax)
+sns.violinplot(data=data, x='Channel', y='Response_Time_Hours', 
+               palette=['#2E86AB', '#A23B72', '#F18F01'], 
+               inner='box')
 
-# Titles and labels
-ax.set_title('Customer Support Response Time Distribution by Channel')
-ax.set_xlabel('Support Channel')
-ax.set_ylabel('Response Time (minutes)')
+# Customize the plot
+plt.title('Customer Support Response Time Distribution\nby Support Channel', 
+          fontsize=16, fontweight='bold', pad=20)
+plt.xlabel('Support Channel', fontsize=14, fontweight='semibold')
+plt.ylabel('Response Time (Hours)', fontsize=14, fontweight='semibold')
 
-# Save chart as exactly 512x512 px
-fig.set_size_inches(5.12, 5.12)  # size in inches
-plt.savefig('chart.png', dpi=100, bbox_inches='tight')  # 5.12*100 = 512 px
-plt.close()
+# Improve tick labels
+plt.xticks(fontsize=12)
+plt.yticks(fontsize=12)
+
+# Add grid for better readability
+plt.grid(True, alpha=0.3)
+
+# Tight layout to prevent label cutoff
+plt.tight_layout()
+
+# Save the chart with exact specifications
+plt.savefig('chart.png', dpi=64, bbox_inches='tight')
+
+# Display the plot
+plt.show()
