@@ -1,46 +1,32 @@
-# chart.py
-import pandas as pd
-import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
 
-# ----------------------------
-# 1. Generate synthetic data
-# ----------------------------
-np.random.seed(42)  # for reproducibility
+# Generate synthetic customer support response time data
+np.random.seed(42)
+channels = ['Email', 'Chat', 'Phone']
+data = []
 
-# Example channels
-channels = ['Email', 'Phone', 'Chat']
-
-# Generate random response times (in minutes)
-data = {
-    'Channel': np.repeat(channels, 100),
-    'ResponseTime': np.concatenate([
-        np.random.normal(loc=30, scale=5, size=100),  # Email
-        np.random.normal(loc=15, scale=3, size=100),  # Phone
-        np.random.normal(loc=10, scale=2, size=100)   # Chat
-    ])
-}
+for ch in channels:
+    times = np.random.gamma(shape=2, scale=10, size=100)  # realistic response times
+    for t in times:
+        data.append({'Channel': ch, 'ResponseTime': t})
 
 df = pd.DataFrame(data)
 
-# ----------------------------
-# 2. Create the violinplot
-# ----------------------------
-sns.set_style('whitegrid')
-plt.figure(figsize=(8, 8))  # ensures 512x512 when saved with dpi=64
+# Seaborn styling
+sns.set_style("whitegrid")
+sns.set_context("talk")
 
-palette = sns.color_palette("Set2")
+# Create figure (512x512 px ~ 8x8 inches at dpi=64)
+plt.figure(figsize=(8, 8))
+sns.violinplot(x='Channel', y='ResponseTime', data=df, palette='Set2')
 
-ax = sns.violinplot(x='Channel', y='ResponseTime', data=df, palette=palette)
-ax.set_title('Customer Support Response Times by Channel', fontsize=14)
-ax.set_xlabel('Support Channel', fontsize=12)
-ax.set_ylabel('Response Time (minutes)', fontsize=12)
+plt.title('Customer Support Response Time Distribution by Channel')
+plt.xlabel('Support Channel')
+plt.ylabel('Response Time (minutes)')
 
-# ----------------------------
-# 3. Save the figure
-# ----------------------------
-plt.tight_layout()
+# Save as chart.png with exact size
 plt.savefig('chart.png', dpi=64, bbox_inches='tight')
-plt.show()
-
+plt.close()
