@@ -2,55 +2,79 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
-from PIL import Image
 
-# Set random seed for reproducible data
+# Set random seed for reproducible results
 np.random.seed(42)
 
 # Generate synthetic customer support response time data
-n_samples = 300
+def generate_support_data():
+    channels = ['Email', 'Phone', 'Chat', 'Social Media']
+    data = []
+    
+    # Generate realistic response times for each channel
+    for channel in channels:
+        if channel == 'Email':
+            # Email typically has longer response times
+            times = np.random.lognormal(mean=2.5, sigma=0.8, size=200)
+        elif channel == 'Phone':
+            # Phone has immediate response but variable resolution time
+            times = np.random.gamma(shape=2, scale=15, size=180)
+        elif channel == 'Chat':
+            # Chat has quick response times
+            times = np.random.exponential(scale=8, size=220)
+        else:  # Social Media
+            # Social media has varied response times
+            times = np.concatenate([
+                np.random.exponential(scale=5, size=80),  # Quick responses
+                np.random.lognormal(mean=3, sigma=0.5, size=70)  # Slower responses
+            ])
+        
+        # Add channel data to list
+        for time in times:
+            data.append({'Channel': channel, 'Response_Time_Hours': max(0.1, time)})
+    
+    return pd.DataFrame(data)
 
-# Create realistic response time distributions for different channels (in minutes)
-email_times = np.random.lognormal(mean=2.5, sigma=0.8, size=n_samples // 3)
-phone_times = np.random.lognormal(mean=1.8, sigma=0.6, size=n_samples // 3)
-chat_times = np.random.lognormal(mean=1.2, sigma=0.5, size=n_samples // 3)
+# Generate the dataset
+df = generate_support_data()
 
-# Create DataFrame
-data = pd.DataFrame({
-    'Channel': ['Email'] * (n_samples // 3) +
-               ['Phone'] * (n_samples // 3) +
-               ['Chat'] * (n_samples // 3),
-    'Response_Time_Minutes': np.concatenate([email_times, phone_times, chat_times])
-})
-
-# Set up the plot style and context
+# Set up the plot style for professional presentation
 sns.set_style("whitegrid")
 sns.set_context("talk", font_scale=1.1)
 
-# Create figure with exact size
-fig = plt.figure(figsize=(8, 8), dpi=64)
+# Create figure with specified size for 512x512 output
+plt.figure(figsize=(8, 8))
 
-# Create violinplot
-sns.violinplot(data=data, x='Channel', y='Response_Time_Minutes',
-               palette=['#2E86AB', '#A23B72', '#F18F01'],
-               inner='box')
+# Create violin plot
+ax = sns.violinplot(
+    data=df, 
+    x='Channel', 
+    y='Response_Time_Hours',
+    palette='viridis',
+    inner='quart'
+)
 
 # Customize the plot
-plt.title('Customer Support Response Time Distribution\nby Support Channel',
+plt.title('Customer Support Response Time Distribution\nby Support Channel', 
           fontsize=16, fontweight='bold', pad=20)
 plt.xlabel('Support Channel', fontsize=14, fontweight='semibold')
-plt.ylabel('Response Time (Minutes)', fontsize=14, fontweight='semibold')
-plt.xticks(fontsize=12)
-plt.yticks(fontsize=12)
+plt.ylabel('Response Time (Hours)', fontsize=14, fontweight='semibold')
+
+# Rotate x-axis labels for better readability
+plt.xticks(rotation=45, ha='right')
+
+# Add grid for better readability
 plt.grid(True, alpha=0.3)
 
-# Save without any bbox or pad adjustments
-plt.savefig('chart.png', dpi=64)
+# Adjust layout to prevent label cutoff
+plt.tight_layout()
 
-# Force resize to 512x512 to guarantee requirement
-img = Image.open('chart.png')
-img = img.resize((512, 512))
-img.save('chart.png')
+# Save the chart with exact specifications
+plt.savefig('chart.png', dpi=64, bbox_inches='tight')
 
-# Show plot
+# Display the plot
 plt.show()
+
+# Print summary statistics
+print("Summary Statistics by Channel:")
+print(df.groupby('Channel')['Response_Time_Hours'].describe().round(2))
