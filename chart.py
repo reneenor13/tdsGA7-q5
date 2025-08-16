@@ -13,35 +13,30 @@ data = []
 # Generate realistic response times for each channel
 for channel in channels:
     if channel == 'Email':
-        # Email typically has longer, more variable response times
         times = np.random.lognormal(mean=2.0, sigma=0.7, size=150)
     elif channel == 'Phone':
-        # Phone has immediate pickup but variable call resolution
         times = np.random.gamma(shape=3, scale=5, size=200)
     elif channel == 'Chat':
-        # Chat has quick response times, mostly under 2 hours
         times = np.random.exponential(scale=1.5, size=180)
     else:  # Social Media
-        # Social media has bimodal distribution - quick or very slow
         quick_responses = np.random.exponential(scale=0.5, size=80)
         slow_responses = np.random.lognormal(mean=2.5, sigma=0.5, size=70)
         times = np.concatenate([quick_responses, slow_responses])
     
-    # Add channel data to list
     for time in times:
         data.append({'Support_Channel': channel, 'Response_Time_Hours': max(0.1, time)})
 
 # Create DataFrame
 df = pd.DataFrame(data)
 
-# Set professional styling for executive presentation
+# Set professional styling
 sns.set_style("whitegrid")
-sns.set_context("paper", font_scale=1.2)
+sns.set_context("paper", font_scale=1.0)
 
-# Create figure with exact specifications
-plt.figure(figsize=(8, 8))
+# Create figure with EXACT 512x512 pixel specifications
+plt.figure(figsize=(5.12, 5.12), dpi=100)
 
-# Create violin plot with professional styling
+# Create violin plot
 sns.violinplot(
     data=df,
     x='Support_Channel',
@@ -50,26 +45,17 @@ sns.violinplot(
     inner='quartile'
 )
 
-# Professional styling and labels
+# Styling
 plt.title('Customer Support Response Time Distribution\nby Support Channel', 
-          fontsize=14, fontweight='bold', pad=20)
-plt.xlabel('Support Channel', fontsize=12, fontweight='semibold')
-plt.ylabel('Response Time (Hours)', fontsize=12, fontweight='semibold')
+          fontsize=12, fontweight='bold', pad=15)
+plt.xlabel('Support Channel', fontsize=10, fontweight='semibold')
+plt.ylabel('Response Time (Hours)', fontsize=10, fontweight='semibold')
 
-# Rotate x-axis labels for better readability
-plt.xticks(rotation=0)
-
-# Add subtle grid
+# Add grid
 plt.grid(True, alpha=0.3, axis='y')
 
-# Ensure tight layout
-plt.tight_layout()
+# Save with EXACT 512x512 dimensions - NO bbox_inches='tight'!
+plt.savefig('chart.png', dpi=100)
 
-# Save chart with exact specifications for 512x512 pixels
-plt.savefig('chart.png', dpi=64, bbox_inches='tight')
-
-# Display summary statistics
-print("Response Time Analysis Summary:")
-print(df.groupby('Support_Channel')['Response_Time_Hours'].describe().round(2))
-
+print("Chart saved as exactly 512x512 pixels")
 plt.show()
