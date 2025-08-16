@@ -7,74 +7,69 @@ import numpy as np
 np.random.seed(42)
 
 # Generate synthetic customer support response time data
-def generate_support_data():
-    channels = ['Email', 'Phone', 'Chat', 'Social Media']
-    data = []
-    
-    # Generate realistic response times for each channel
-    for channel in channels:
-        if channel == 'Email':
-            # Email typically has longer response times
-            times = np.random.lognormal(mean=2.5, sigma=0.8, size=200)
-        elif channel == 'Phone':
-            # Phone has immediate response but variable resolution time
-            times = np.random.gamma(shape=2, scale=15, size=180)
-        elif channel == 'Chat':
-            # Chat has quick response times
-            times = np.random.exponential(scale=8, size=220)
-        else:  # Social Media
-            # Social media has varied response times
-            times = np.concatenate([
-                np.random.exponential(scale=5, size=80),  # Quick responses
-                np.random.lognormal(mean=3, sigma=0.5, size=70)  # Slower responses
-            ])
-        
-        # Add channel data to list
-        for time in times:
-            data.append({'Channel': channel, 'Response_Time_Hours': max(0.1, time)})
-    
-    return pd.DataFrame(data)
+channels = ['Email', 'Phone', 'Chat', 'Social Media']
+data = []
 
-# Generate the dataset
-df = generate_support_data()
+# Generate realistic response times for each channel
+for channel in channels:
+    if channel == 'Email':
+        # Email typically has longer, more variable response times
+        times = np.random.lognormal(mean=2.0, sigma=0.7, size=150)
+    elif channel == 'Phone':
+        # Phone has immediate pickup but variable call resolution
+        times = np.random.gamma(shape=3, scale=5, size=200)
+    elif channel == 'Chat':
+        # Chat has quick response times, mostly under 2 hours
+        times = np.random.exponential(scale=1.5, size=180)
+    else:  # Social Media
+        # Social media has bimodal distribution - quick or very slow
+        quick_responses = np.random.exponential(scale=0.5, size=80)
+        slow_responses = np.random.lognormal(mean=2.5, sigma=0.5, size=70)
+        times = np.concatenate([quick_responses, slow_responses])
+    
+    # Add channel data to list
+    for time in times:
+        data.append({'Support_Channel': channel, 'Response_Time_Hours': max(0.1, time)})
 
-# Set up the plot style for professional presentation
+# Create DataFrame
+df = pd.DataFrame(data)
+
+# Set professional styling for executive presentation
 sns.set_style("whitegrid")
-sns.set_context("talk", font_scale=1.1)
+sns.set_context("paper", font_scale=1.2)
 
-# Create figure with specified size for 512x512 output
+# Create figure with exact specifications
 plt.figure(figsize=(8, 8))
 
-# Create violin plot
-ax = sns.violinplot(
-    data=df, 
-    x='Channel', 
+# Create violin plot with professional styling
+sns.violinplot(
+    data=df,
+    x='Support_Channel',
     y='Response_Time_Hours',
-    palette='viridis',
-    inner='quart'
+    palette='Set2',
+    inner='quartile'
 )
 
-# Customize the plot
+# Professional styling and labels
 plt.title('Customer Support Response Time Distribution\nby Support Channel', 
-          fontsize=16, fontweight='bold', pad=20)
-plt.xlabel('Support Channel', fontsize=14, fontweight='semibold')
-plt.ylabel('Response Time (Hours)', fontsize=14, fontweight='semibold')
+          fontsize=14, fontweight='bold', pad=20)
+plt.xlabel('Support Channel', fontsize=12, fontweight='semibold')
+plt.ylabel('Response Time (Hours)', fontsize=12, fontweight='semibold')
 
 # Rotate x-axis labels for better readability
-plt.xticks(rotation=45, ha='right')
+plt.xticks(rotation=0)
 
-# Add grid for better readability
-plt.grid(True, alpha=0.3)
+# Add subtle grid
+plt.grid(True, alpha=0.3, axis='y')
 
-# Adjust layout to prevent label cutoff
+# Ensure tight layout
 plt.tight_layout()
 
-# Save the chart with exact specifications
+# Save chart with exact specifications for 512x512 pixels
 plt.savefig('chart.png', dpi=64, bbox_inches='tight')
 
-# Display the plot
-plt.show()
+# Display summary statistics
+print("Response Time Analysis Summary:")
+print(df.groupby('Support_Channel')['Response_Time_Hours'].describe().round(2))
 
-# Print summary statistics
-print("Summary Statistics by Channel:")
-print(df.groupby('Channel')['Response_Time_Hours'].describe().round(2))
+plt.show()
